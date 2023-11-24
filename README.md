@@ -14,10 +14,10 @@ If you're a code enthusiast who prefers to skip the written clutter, open the mi
 
 Compose screens often display asynchronously loaded data provided as `StateFlow<ScreenState>` by a `ViewModel`.
 It's inevitable that exceptions might occur during data retrieval, prompting the question of how to recover from errors.
-A user-triggered retry provides a simple solution, but implementing it with `Flow.retryWhen {...}` becomes less satisfying if you must do it for every screen. 
-Especially when you also want to handle a second case: A user-triggered refresh without an error. 
-So if you are tired to write boilerplate code over and over again, then you are at the right place.
-Only a few lines are needed to solve this problem, but first, let's dive into some example code to get a better understanding of the problem.
+While a user-triggered retry provides a simple solution, implementing it with `Flow.retryWhen {...}` becomes less satisfying, especially when dealing with it for every screen.
+This dissatisfaction grows further when you need to handle a second case: a user-triggered refresh without an error.
+If you're tired of writing boilerplate code repeatedly, you've come to the right place.
+Solving this problem requires only a few lines of code, but first, let's explore some minimal working example code to gain a better understanding of the issue.
 
 #### Defining Screen States ####
 
@@ -56,7 +56,7 @@ class ProductScreenViewModel : ViewModel() {
     }
 }
 ```
-**Currently, there is no out-of-the-box way to do a user triggered of restart the flow if fetching fails.**
+**Currently, there isn't a built-in mechanism for a user-triggered restart of the flow in both cases: in the event of fetching failures or when the user wishes to refresh the screen after a while.**
 
 <!--suppress HtmlDeprecatedAttribute -->
 <p align="center">
@@ -108,6 +108,8 @@ Alright, let's define our extension as an interface that can be used as wrapper 
 ### Make SharingStarted restartable 🚂🌊🌊🌊🌊 <a id='intro'></a> ###
 
 ```kotlin
+// SharingRestartable.kt
+
 interface SharingRestartable: SharingStarted {
     fun restart()
 }
@@ -139,7 +141,7 @@ private data class SharingRestartableImpl(
 }
 ```
 
-To leverage our new implementation, we need some syntactic sugar in the form of an extension function:
+To leverage our new `private` implementation, we need some syntactic sugar in the form of an extension function:
 
 ```kotlin
 // SharingRestartable.kt
@@ -154,14 +156,19 @@ Now, we can define our flow and access the built-in restart mechanism:
 ```kotlin
 class ProductScreenViewModel : ViewModel() {
     private val restarter = SharingStarted.WhileSubscribed(5000).makeRestartable()
+    
     val productStream = flow {
         //...
+    }.catch {
+        emit(ProductScreenState.Error)
     }.stateIn(
         started = restarter,
         //...
     )
 
     fun restart() = restarter.restart()
+    
+    //...
 }
 ```
 
@@ -178,7 +185,7 @@ interface RestartableStateFlow<out T> : StateFlow<T> {
 
 ```
 
-Then we can utilize our `SharingRestartable` implementation in conjunction with our custom `stateIn()` extension function:
+Then we can utilize our `SharingRestartable` implementation in conjunction with a custom `stateIn()` extension function:
 
 ```kotlin
 // RestartableStateFlow.kt
@@ -195,22 +202,28 @@ fun <T> Flow<T>.restartableStateIn(
     }
 }
 ```
-This leads to our final implementation:
+This leads to our final implementation. 
 
 ```kotlin
 class ProductScreenViewModel : ViewModel() {
     val productStream = flow {
-        //...
-    }.restartableStateIn(
+        emit(ProductScreenState.Loading)
+        emit(ProductScreenState.Description(fetchDescription()))
+    }.catch {
+        emit(ProductScreenState.Error)
+    }.restartableStateIn( // <<< Switching to restartableStateIn() is everything we have to change
+        scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        //...
+        initialValue = ProductScreenState.Loading
     )
 
-    fun restart() = productStream.restart()
+    private suspend fun fetchDescription(): String {
+        // ...
+    }
 }
 ```
 
-Even the `viewModel.restart()` function can be removed, because `RestartableStateFlow.restart()` function is already exposed to the UI layer:
+Even the `viewModel.restart()` function was removed, because `RestartableStateFlow.restart()` function is already exposed by the flow to the UI layer:
 
 ```kotlin
 @Composable
