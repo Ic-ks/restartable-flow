@@ -1,5 +1,6 @@
 # Restartable StateFlows (in Compose) #
-If `StateFlows<T>`, `SharingStarted.WhileSubscibed(1337)` and `ViewModels` is your daily bread, then jump straight to the <a href="#intro">restart implementation</a> below and skip the intro :) 
+If `StateFlows<T>`, `SharingStarted.WhileSubscibed(1337)` and `ViewModels` is your daily bread, 
+then jump straight to the <a href="#intro">restart implementation</a> below and skip the intro 🧐 
 
 ### Intro ###
 Often there are compose screens which display asynchronously loaded data. The data is provided as `StateFlow<ScreenState>` by a `ViewModel`. 
