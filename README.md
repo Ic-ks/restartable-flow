@@ -1,14 +1,21 @@
 # Restartable StateFlows (in Compose) #
-If `StateFlows<T>`, `SharingStarted.WhileSubscibed(1337)` and `ViewModels` is your daily bread, 
-then jump straight to the <a href="#intro">restart implementation</a> below and skip the intro 🧐 
+
+If `StateFlows<T>`, `SharingStarted.WhileSubscribed(1337)`, and `ViewModels` are your daily bread,
+feel free to jump straight to the <a href="#intro">restart implementation</a> below and skip the intro 🧐
+If you're a code enthusiast who prefers to skip the clutter, open the minimal working example on
+<a href="https://github.com/Ic-ks/restartable-flow">GitHub</a>.
 
 ### Intro ###
-Often there are compose screens which display asynchronously loaded data. The data is provided as `StateFlow<ScreenState>` by a `ViewModel`. 
-Needless to say that exceptions could be thrown during the data retrieval. This leads to the question of how to recover from errors. 
-A simple retry could be the solution. So let's have a look at the Code:
 
-#### Defining screen states ####
-We need 3 states, a loading state, an error state and finally a state which contains our fetched data:
+Compose screens often display asynchronously loaded data provided as `StateFlow<ScreenState>` by a `ViewModel`.
+It's inevitable that exceptions might occur during data retrieval, prompting the question of how to recover from errors.
+A straightforward solution is a user triggered retry. But how to implement if a bloated `flow.retryWhen {}` is not satisfying. 
+Now, let's dive into example code:
+
+#### Defining Screen States ####
+
+To model clear states for the screen, we require three: a loading state, an error state, and, finally, a state containing the fetched data:
+
 ```kotlin
 sealed interface ProductScreenState {
     object Loading: ProductScreenState
@@ -16,9 +23,11 @@ sealed interface ProductScreenState {
     @Immutable
     data class Description(val description: String): ProductScreenState
 }
-```
+
 #### Implementing the ViewModel ####
-Our ViewModel consist of a StateFlow which reflects fetching process with the help of the 3 states.  
+
+Our ViewModel consists of a StateFlow that reflects the fetching process with the help of the three states.
+
 ```kotlin
 class ProductScreenViewModel : ViewModel() {
     val productStream = flow {
@@ -39,27 +48,27 @@ class ProductScreenViewModel : ViewModel() {
     }
 }
 ```
-**Right now, there is no out-of-the-box way to restart the flow if the fetching fails.**
+**Currently, there is no out-of-the-box way to restart the flow if fetching fails.**
 
 <!--suppress HtmlDeprecatedAttribute -->
 <p align="center">
     <img src="angry.svg" alt="Angry Meme">
 </p>
 
-#### Wait, we missed an important detail  ####
-Let's have a look at this line: `started = SharingStarted.WhileSubscribed(5000)` .
-It tells the StateFlow to start the state emission as soon there is at least one subscriber.
-But it is also responsible to **restart** 🎉 the flow as soon there is no subscription left and a new subscription arrives.
-Given that time between zero subscriptions and the first new subscription is greater than 5 seconds.
-Sounds interesting...
+#### Wait, We Missed an Important Detail ####
+
+Let's take a closer look at this line: `started = SharingStarted.WhileSubscribed(5000)`.
+This line instructs the StateFlow to initiate state emission as soon as there is at least one subscriber.
+Moreover, it plays a crucial role in **restarting** 🎉 the flow when there are no subscriptions and a new subscription occurs.
+This happens when the time between zero subscriptions and the arrival of a new subscription exceeds 5 seconds.
+Quite intriguing, isn't it...
 
 <!--suppress HtmlDeprecatedAttribute -->
 <p align="center">
     <img src="thinking.svg" alt="Angry Meme">
 </p>
 
-Let's have a look at the source code of `SharingStarted.WhileSubscribed(5000)` 
-There is only one function which implements the described logic:
+Examining the source code of `SharingStarted.WhileSubscribed(5000)`, we find that the logic is implemented in the following function:
 
 ```kotlin
 private class StartedWhileSubscribed: SharingStarted {
@@ -82,14 +91,13 @@ private class StartedWhileSubscribed: SharingStarted {
     [...]
 ```
 
-So the `emit(SharingCommand.STOP_AND_RESET_REPLAY_CACHE)` seems to stop the flow and to drop the current state. 
-Unfortunately, there is no public access to trigger this action manually. 
-But wait, we can implement our own `SharingStarted`, it is a public interface. 
-Even better would be an extension for all existing `SharingStarted` implementations (`StartedEagerly`, `StartedLazy` and `StartedWhileSubscribed`).
-Ok then let's define our extension as interface which can be used to wrap an existing `SharingStarted` implementation.
+So the `emit(SharingCommand.STOP_AND_RESET_REPLAY_CACHE)` stops the flow and discards the current state.
+Unfortunately, there is no public access to trigger this action manually.
+But wait, we can implement our own `SharingStarted` — it is a public interface.
+Even better would be an extension for all existing `SharingStarted` implementations (`StartedEagerly`, `StartedLazy`, and `StartedWhileSubscribed`).
+Alright, let's define our extension as an interface that can be used as wrapper for the existing `SharingStarted` implementations.
 
-### Make SharingStarted restartable 🚂🌊🌊🌊🌊 ###
-<a id='intro'></a>
+### Make SharingStarted restartable 🚂🌊🌊🌊🌊 <a id='intro'></a> ###
 
 ```kotlin
 interface SharingRestartable: SharingStarted {
@@ -97,10 +105,11 @@ interface SharingRestartable: SharingStarted {
 }
 ```
 
-Ok now we need an implementation of our interface. 
-The only thing we have to do, is to emit a `SharingCommand.STOP_AND_RESET_REPLAY_CACHE` and a `SharingCommand.START` command as soon `restart()` is called.
-Everything else should be handled by the existing `SharingStarted` instance. 
-This can be done by merging our restart flow with the existing flow of the wrapped instance:
+Now, we require an implementation of our interface.
+The only task is to emit a `SharingCommand.STOP_AND_RESET_REPLAY_CACHE` and a `SharingCommand.START` command as soon as our defined `restart()` is called.
+Everything else should be handled by the existing `SharingStarted` instance.
+This can be achieved by merging a new `MutableSharedFlow<SharingCommand>` which is responsible to trigger the restart and the existing flow of the wrapped instance:
+
 
 ```kotlin
 // SharingRestartable.kt
@@ -122,7 +131,7 @@ private data class SharingRestartableImpl(
 }
 ```
 
-To use our new implementation, we need some syntactic sugar in the form of an extension function: 
+To leverage our new implementation, we need some syntactic sugar in the form of an extension function:
 
 ```kotlin
 // SharingRestartable.kt
@@ -132,7 +141,7 @@ fun SharingStarted.makeRestartable(): SharingRestartable {
 }
 ```
 
-Now we can define our flow and can access the built-in restart mechanism:
+Now, we can define our flow and access the built-in restart mechanism:
 
 ```kotlin
     private val restarter = SharingStarted.WhileSubscribed(5000).makeRestartable()
@@ -146,17 +155,22 @@ Now we can define our flow and can access the built-in restart mechanism:
     fun restart() = restarter.restart()
     
 ```
-### Finally, reduce the boilerplate even more by providing a restartable state flow ###
 
-Therefore, we need an interface which extends the existing `StateFlow<T>` by a restart function:
+### Finally, Reduce the Boilerplate Even More by Providing a Restartable State Flow ###
+
+For this purpose, we need an interface that extends the existing `StateFlow<T>` by adding a restart function:
+
 ```kotlin
 // RestartableStateFlow.kt
 
 interface RestartableStateFlow<out T> : StateFlow<T> {
     fun restart()
 }
+
 ```
-Then we can use our `SharingRestartable` implementation in combination our own `stateIn()` extension function:
+
+Then we can utilize our `SharingRestartable` implementation in conjunction with our custom `stateIn()` extension function:
+
 ```kotlin
 // RestartableStateFlow.kt
 
