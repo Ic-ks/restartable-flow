@@ -40,3 +40,10 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+/.idea/aws.xml
+/.run/desktop.run.xml
+/.idea/gradle.xml
+/.idea/kotlinc.xml
+/.idea/markdown.xml
+/.idea/misc.xml
+/.idea/vcs.xml
