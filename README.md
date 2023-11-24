@@ -145,16 +145,17 @@ fun SharingStarted.makeRestartable(): SharingRestartable {
 Now, we can define our flow and access the built-in restart mechanism:
 
 ```kotlin
+class ProductScreenViewModel : ViewModel() {
     private val restarter = SharingStarted.WhileSubscribed(5000).makeRestartable()
     val productStream = flow {
-        [..]
+        //...
     }.stateIn(
         started = restarter,
-        [..]
+        //...
     )
-    
+
     fun restart() = restarter.restart()
-    
+}
 ```
 
 ### Finally, Reduce the Boilerplate Even More by Providing a Restartable State Flow ###
@@ -190,17 +191,19 @@ fun <T> Flow<T>.restartableStateIn(
 This leads to our final implementation:
 
 ```kotlin
+class ProductScreenViewModel : ViewModel() {
     val productStream = flow {
-        [..]
+        //...
     }.restartableStateIn(
         started = SharingStarted.WhileSubscribed(5000),
-        [..]
+        //...
     )
-    
+
     fun restart() = productStream.restart()
+}
 ```
 
-Even the `restart()` function of the ViewModel can be removed, because the flows restart function is already exposed to the UI layer:
+Even the `viewModel.restart()` function can be removed, because `RestartableStateFlow.restart()` function is already exposed to the UI layer:
 
 ```kotlin
 @Composable
