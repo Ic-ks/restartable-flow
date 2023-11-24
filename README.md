@@ -1,3 +1,8 @@
+<!--suppress HtmlDeprecatedAttribute -->
+<p align="center">
+    <img src="restartable-flow.jpg" alt="title image">
+</p>
+
 # Restartable StateFlows (in Compose) #
 
 If `StateFlows<T>`, `SharingStarted.WhileSubscribed(1337)`, and `ViewModels` are your daily bread,
