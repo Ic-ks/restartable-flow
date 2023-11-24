@@ -9,8 +9,8 @@ If you're a code enthusiast who prefers to skip the clutter, open the minimal wo
 
 Compose screens often display asynchronously loaded data provided as `StateFlow<ScreenState>` by a `ViewModel`.
 It's inevitable that exceptions might occur during data retrieval, prompting the question of how to recover from errors.
-A straightforward solution is a user triggered retry. But how to implement if a bloated `flow.retryWhen {}` is not satisfying. 
-Now, let's dive into example code:
+A user-triggered retry provides a simple solution, but implementing it becomes less satisfying when faced with a cumbersome `flow.retryWhen {}`.
+Now, let's dive into some example code.
 
 #### Defining Screen States ####
 
@@ -23,10 +23,11 @@ sealed interface ProductScreenState {
     @Immutable
     data class Description(val description: String): ProductScreenState
 }
+```
 
 #### Implementing the ViewModel ####
 
-Our ViewModel consists of a StateFlow that reflects the fetching process with the help of the three states.
+Our `ViewModel` consists of a `StateFlow` that reflects the fetching process with the help of the three states.
 
 ```kotlin
 class ProductScreenViewModel : ViewModel() {
@@ -60,7 +61,7 @@ class ProductScreenViewModel : ViewModel() {
 Let's take a closer look at this line: `started = SharingStarted.WhileSubscribed(5000)`.
 This line instructs the StateFlow to initiate state emission as soon as there is at least one subscriber.
 Moreover, it plays a crucial role in **restarting** 🎉 the flow when there are no subscriptions and a new subscription occurs.
-This happens when the time between zero subscriptions and the arrival of a new subscription exceeds 5 seconds.
+This happens when the time between zero subscriptions and the arrival of a new subscription exceeds 5 seconds. 
 Quite intriguing, isn't it...
 
 <!--suppress HtmlDeprecatedAttribute -->
@@ -214,3 +215,5 @@ private fun ScreenContent(viewModel: ProductScreenViewModel) {
     }
 }
 ```
+
+Your feedback is highly appreciated, especially if there are any flaws.
