@@ -40,7 +40,7 @@ class ProductScreenViewModel : ViewModel() {
 }
 ```
 **Right now, there is no out-of-the-box way to restart the flow if the fetching fails.**
-<p align="center">
+<p style="text-align: center;width: 100%">
     <img src="angry.svg" alt="Angry Meme">
 </p>
 
@@ -50,7 +50,7 @@ It tells the StateFlow to start the state emission as soon there is at least one
 But it is also responsible to **restart** 🎉 the flow as soon there is no subscription left and a new subscription arrives.
 Given that time between zero subscriptions and the first new subscription is greater than 5 seconds.
 Sounds interesting...
-<p align="center">
+<p style="text-align: center;width: 100%">
     <img src="thinking.svg" alt="Angry Meme">
 </p>
 
