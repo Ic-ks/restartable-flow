@@ -7,15 +7,17 @@
 
 If `StateFlows<T>`, `SharingStarted.WhileSubscribed(1337)`, and `ViewModels` are your daily bread,
 feel free to jump straight to the <a href="#intro">restart implementation</a> below and skip the intro 🧐
-If you're a code enthusiast who prefers to skip the clutter, open the minimal working example on
+If you're a code enthusiast who prefers to skip the written clutter, open the minimal working example on
 <a href="https://github.com/Ic-ks/restartable-flow">GitHub</a>.
 
 ### Intro ###
 
 Compose screens often display asynchronously loaded data provided as `StateFlow<ScreenState>` by a `ViewModel`.
 It's inevitable that exceptions might occur during data retrieval, prompting the question of how to recover from errors.
-A user-triggered retry provides a simple solution, but implementing it becomes less satisfying when faced with a cumbersome `flow.retryWhen {}`.
-Now, let's dive into some example code.
+A user-triggered retry provides a simple solution, but implementing it with `Flow.retryWhen {...}` becomes less satisfying if you must do it for every screen. 
+Especially when you also want to handle a second case: A user-triggered refresh without an error. 
+So if you are tired to write boilerplate code over and over again, then you are at the right place.
+Only a few lines are needed to solve this problem, but first, let's dive into some example code to get a better understanding of the problem.
 
 #### Defining Screen States ####
 
@@ -54,7 +56,7 @@ class ProductScreenViewModel : ViewModel() {
     }
 }
 ```
-**Currently, there is no out-of-the-box way to restart the flow if fetching fails.**
+**Currently, there is no out-of-the-box way to do a user triggered of restart the flow if fetching fails.**
 
 <!--suppress HtmlDeprecatedAttribute -->
 <p align="center">
