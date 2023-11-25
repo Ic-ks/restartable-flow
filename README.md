@@ -225,7 +225,7 @@ class ProductScreenViewModel : ViewModel() {
 }
 ```
 
-Even the `viewModel.restart()` function was removed, because `RestartableStateFlow.restart()` function is already exposed by the flow to the UI layer:
+Even the `viewModel.restart()` function was removed, because `RestartableStateFlow.restart()` function is already exposed to the UI layer:
 
 ```kotlin
 @Composable
