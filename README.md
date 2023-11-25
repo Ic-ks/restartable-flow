@@ -5,7 +5,7 @@
 
 # Restartable StateFlows (in Compose) #
 
-If `StateFlows<T>`, `SharingStarted.WhileSubscribed(1337)`, and `ViewModels` are your daily bread,
+If `StateFlows<T>`, `SharingStarted.WhileSubscribed(4711)`, and `ViewModels` are your daily bread,
 feel free to jump straight to the <a href="#intro">restart implementation</a> below and skip the intro 🧐
 If you're a code enthusiast who prefers to skip the written clutter, open the minimal working example on
 <a href="https://github.com/Ic-ks/restartable-flow">GitHub</a>.
@@ -60,7 +60,7 @@ class ProductScreenViewModel : ViewModel() {
 
 <!--suppress HtmlDeprecatedAttribute -->
 <p align="center">
-    <img src="angry.svg" alt="Angry Meme">
+    <img src="angry.png" alt="Angry Meme">
 </p>
 
 #### Wait, We Missed an Important Detail ####
@@ -73,7 +73,7 @@ Quite intriguing, isn't it...
 
 <!--suppress HtmlDeprecatedAttribute -->
 <p align="center">
-    <img src="thinking.svg" alt="Angry Meme">
+    <img src="thinking.png" alt="Angry Meme">
 </p>
 
 Examining the source code of `SharingStarted.WhileSubscribed(5000)`, we find that the logic is implemented in the following function:
