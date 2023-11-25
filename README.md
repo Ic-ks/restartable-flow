@@ -233,10 +233,15 @@ private fun ScreenContent(viewModel: ProductScreenViewModel) {
     val state = viewModel.productStream.collectAsState()
     when (val stateValue = state.value) {
         ProductScreenState.Loading -> LoadingPanel()
-        is ProductScreenState.Description -> DescriptionPanel(stateValue.description)
+
+        is ProductScreenState.Description -> DescriptionPanel(
+            description = stateValue.description,
+            onClickRefresh = viewModel.productStream::restart // 🤩
+        )
+
         ProductScreenState.Error -> ErrorPanel(
-            onClickRestart = viewModel.productStream::restart // There we go :)
-        ) 
+            onClickRetry = viewModel.productStream::restart   // 🤩
+        )
     }
 }
 ```

@@ -1,9 +1,10 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.Button
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Text
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -27,21 +28,47 @@ private fun ScreenContent(viewModel: ProductScreenViewModel) {
     val state = viewModel.productStream.collectAsState()
     when (val stateValue = state.value) {
         ProductScreenState.Loading -> LoadingPanel()
-        is ProductScreenState.Description -> DescriptionPanel(stateValue.description)
-        ProductScreenState.Error -> ErrorPanel(onClickRestart = viewModel.productStream::restart)
+
+        is ProductScreenState.Description -> DescriptionPanel(
+            description = stateValue.description,
+            onClickRefresh = viewModel.productStream::restart // 🤩
+        )
+
+        ProductScreenState.Error -> ErrorPanel(
+            onClickRetry = viewModel.productStream::restart   // 🤩
+        )
     }
 }
 
 @Composable
-private fun ErrorPanel(onClickRestart: () -> Unit) {
-    Button(onClickRestart) {
-        Text("Restart")
+private fun ErrorPanel(onClickRetry: () -> Unit) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = "Error!",
+            color = MaterialTheme.colors.error
+        )
+        Button(onClickRetry) {
+            Text("Retry")
+        }
     }
 }
 
 @Composable
-private fun DescriptionPanel(description: String) {
-    Text(description)
+private fun DescriptionPanel(
+    description: String,
+    onClickRefresh: () -> Unit
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        IconButton(
+            onClick = onClickRefresh,
+        ) {
+            Icon(
+                imageVector = Icons.Default.Refresh,
+                contentDescription = "Refresh"
+            )
+        }
+        Text(description)
+    }
 }
 
 @Composable
