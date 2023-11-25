@@ -76,11 +76,11 @@ Quite intriguing, isn't it...
     <img src="thinking.png" alt="Angry Meme">
 </p>
 
-Examining the source code of `SharingStarted.WhileSubscribed(5000)`, we find that the logic is implemented in the following function:
+Examining the source code of `SharingStarted.WhileSubscribed(5000)`, we find that the logic is implemented in the following class:
 
 ```kotlin
 private class StartedWhileSubscribed: SharingStarted {
-    [...]
+    // ...
     override fun command(subscriptionCount: StateFlow<Int>): Flow<SharingCommand> = subscriptionCount
         .transformLatest { count ->
             if (count > 0) {
@@ -96,7 +96,9 @@ private class StartedWhileSubscribed: SharingStarted {
         }
         .dropWhile { it != SharingCommand.START } // don't emit any STOP/RESET_BUFFER to start with, only START
         .distinctUntilChanged()
-    [...]
+    }
+    //...
+}
 ```
 
 So the `emit(SharingCommand.STOP_AND_RESET_REPLAY_CACHE)` stops the flow and discards the current state.
@@ -151,7 +153,7 @@ fun SharingStarted.makeRestartable(): SharingRestartable {
 }
 ```
 
-Now, we can define our flow and access the built-in restart mechanism:
+Now, we can define our flow and access our new restart mechanism:
 
 ```kotlin
 class ProductScreenViewModel : ViewModel() {
