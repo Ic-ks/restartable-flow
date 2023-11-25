@@ -60,7 +60,7 @@ class ProductScreenViewModel : ViewModel() {
 
 <!--suppress HtmlDeprecatedAttribute -->
 <p align="center">
-    <img src="angry.png" alt="Angry Meme">
+    <img src="angry.svg" alt="Angry Meme">
 </p>
 
 #### Wait, We Missed an Important Detail ####
@@ -73,7 +73,7 @@ Quite intriguing, isn't it...
 
 <!--suppress HtmlDeprecatedAttribute -->
 <p align="center">
-    <img src="thinking.png" alt="Angry Meme">
+    <img src="thinking.svg" alt="Angry Meme">
 </p>
 
 Examining the source code of `SharingStarted.WhileSubscribed(5000)`, we find that the logic is implemented in the following class:
